@@ -1,11 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Dashboard</title>
 </head>
 <body>
+
+  <div class="container">
     
+    <header>
+      <h1>Weather Dashboard</h1>
+      <p>View weather conditions and trends for different cities.</p>
+    </header>
+
+    <section class="search-section">
+      <form id="weatherForm">
+        <input type="text" id="cityInput" placeholder="Enter city name" />
+        <button type="submit">Search</button>
+      </form>
+    </section>
+
+    <section class="saved-cities">
+      <h2>Saved Cities</h2>
+      <div id="savedCitiesList">
+        <button type="button">Port of Spain</button>
+        <button type="button">London</button>
+        <button type="button">New York</button>
+      </div>
+    </section>
+
+    <section class="current-weather">
+      <h2>Current Weather</h2>
+      <div id="weatherCard">
+        <h3 id="cityName">City Name</h3>
+        <p id="temperature">Temperature: -- °C</p>
+        <p id="condition">Condition: --</p>
+        <p id="humidity">Humidity: --%</p>
+        <p id="windSpeed">Wind Speed: -- km/h</p>
+        <button id="saveCityBtn" type="button">Save City</button>
+      </div>
+    </section>
+
+    <section class="forecast-section">
+      <h2>5-Day Forecast</h2>
+      <div id="forecastContainer">
+        <div class="forecast-card">
+          <h3>Day 1</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 2</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 3</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 4</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 5</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="charts-section">
+      <h2>Weather Trends</h2>
+
+      <div class="chart-box">
+        <h3>Temperature Trend</h3>
+        <canvas id="tempChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>Humidity Trend</h3>
+        <canvas id="humidityChart"></canvas>
+      </div>
+    </section>
+
+    <section class="user-notes">
+      <h2>User Notes</h2>
+      <textarea id="weatherNote" placeholder="Write notes about this city's weather..."></textarea>
+      <button id="saveNoteBtn" type="button">Save Note</button>
+    </section>
+
+  </div>
+
 </body>
 </html>
