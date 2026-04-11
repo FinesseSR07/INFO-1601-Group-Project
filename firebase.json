@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "arasakaweather",
     "public": "public",
     "ignore": [
       "firebase.json",
@@ -9,6 +8,8 @@
     ]
   },
   "firestore": {
+    "database": "(default)",
+    "location": "us-central1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   }
