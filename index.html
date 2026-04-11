@@ -13,12 +13,34 @@
     font-family: Arial, Helvetica, sans-serif;
   }
   nav{
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
+    padding: 12px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     justify-content: space-between;
     align-items: center;
+    background-color: lightblue;
   }
-  h1{
-    
+  nav h1{
+    color: white;
+    font-size: 22px;
+    font-weight: 500;
+  }
+  nav p{
+    color: white;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .container{
+    max-width: 900px;
+    margin: 0px auto;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
   }
   button{
     cursor: pointer;
@@ -31,13 +53,16 @@
   }
 </style>
 <body>
-
-  <div class="container">
-    
-    <header>
+  <nav>
+    <div>
       <h1>Weather Dashboard</h1>
       <p>View weather conditions and trends for different cities.</p>
-    </header>
+
+    </div>
+    
+  </nav>
+
+  <div class="container">
 
     <section class="search-section">
       <form id="weatherForm">
