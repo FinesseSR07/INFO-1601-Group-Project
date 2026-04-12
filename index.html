@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Dashboard</title>
+</head>
+<style>
+  *{
+    box-sizing: border-box;
+    margin: 5px;
+    padding: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  body{
+    background-color: #98adc3;
+  }
+
+  nav{
+    position: sticky;
+    top: 0;
+    display: flex;
+    padding: 16px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(37, 65, 74);
+  }
+  nav h1{
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  nav p{
+    color: white;
+    font-size: 14px;
+    margin-top: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  #loginOverlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(20,40,55,0.8);
+    display: flex;
+    justify-content: center;
+  }
+  .login-card{
+    background: ;
+    border-radius: 18px;
+    padding: 36px 32px;
+    width: 350px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1)
+  }
+  .login-card h2{
+    font-size: 22px;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .login-card p{
+    font-size: 13px;
+    margin-bottom: 24px;
+    color: var(--muted);
+  }
+  .login-card label{
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .login-card input{
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 0.5px solid black;
+  }
+  #loginBtn{
+    width: 100%;
+  }
+
+
+  .container{
+    max-width: 960px;
+    margin: 0px auto;
+    padding: 20px 24px;
+    display: grid;
+    gap: 16px;
+  }
+  section{
+    background: whitesmoke;
+    border-radius: 14px;
+    padding: 16px;
+    border: 0.5px solid black;
+  }
+  .search-section, .forecast-section, .charts-section, .user-notes{
+    grid-column: span 2;
+  }
+  section h2{
+    font-size: 14px;
+    color: rgb(37, 65, 74);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  #weatherForm{
+    display: flex;
+    gap: 8px;
+  }
+
+  button{
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: orange;
+    border-radius: 5px;
+  }
+  button:hover{
+    background-color: #ff8c00;
+  }
+</style>
+<body>
+  <nav>
+    <div>
+      <h1>Weather Dashboard</h1>
+      <p>View weather conditions and trends for different cities.</p>
+
+    </div>
+    
+  </nav>
+
+  <div class="container">
+
+    <section class="search-section">
+      <form id="weatherForm">
+        <input type="text" id="cityInput" placeholder="Enter city name" />
+        <button type="submit">Search</button>
+      </form>
+    </section>
+
+    <section class="saved-cities">
+      <h2>Saved Cities</h2>
+      <div id="savedCitiesList">
+        <button type="button">Port of Spain</button>
+        <button type="button">London</button>
+        <button type="button">New York</button>
+      </div>
+    </section>
+
+    <section class="current-weather">
+      <h2>Current Weather</h2>
+      <div id="weatherCard">
+        <h3 id="cityName">City Name</h3>
+        <p id="temperature">Temperature: -- °C</p>
+        <p id="condition">Condition: --</p>
+        <p id="humidity">Humidity: --%</p>
+        <p id="windSpeed">Wind Speed: -- km/h</p>
+        <button id="saveCityBtn" type="button">Save City</button>
+      </div>
+    </section>
+
+    <section class="forecast-section">
+      <h2>5-Day Forecast</h2>
+      <div id="forecastContainer">
+        <div class="forecast-card">
+          <h3>Day 1</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 2</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 3</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 4</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+
+        <div class="forecast-card">
+          <h3>Day 5</h3>
+          <p>Temp: -- °C</p>
+          <p>Condition: --</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="charts-section">
+      <h2>Weather Trends</h2>
+
+      <div class="chart-box">
+        <h3>Temperature Trend</h3>
+        <canvas id="tempChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>Humidity Trend</h3>
+        <canvas id="humidityChart"></canvas>
+      </div>
+    </section>
+
+    <section class="user-notes">
+      <h2>User Notes</h2>
+      <textarea id="weatherNote" placeholder="Write notes about this city's weather..."></textarea>
+      <button id="saveNoteBtn" type="button">Save Note</button>
+    </section>
+
+  </div>
+
+</body>
+</html>
