@@ -9,13 +9,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script>
   firebase.initializeApp({
-    apiKey: "AIzaSyCofdxtXTtLefUUqDsq3vcarnVT0J7kuDM",
-    authDomain: "info-1601-group-project-635e4.firebaseapp.com",
+    apiKey: "AIzaSyBwRJa-c2wz911yKX7oSGpvwmEzBMGr-4w",
+    authDomain: "info1601project-d6470.firebaseapp.com",
     projectId: "info-1601-group-project-635e4",
     storageBucket: "info-1601-group-project-635e4.firebasestorage.app",
-    messagingSenderId: "103724767935",
-    appId: "1:103724767935:web:7f91c37b6c76eacf61840a",
-    measurementId: "G-BK9ZGGKRF6"
+    messagingSenderId: "420607635079",
+    appId: "1:420607635079:web:9dd278536c37be5f0f5222"
   });
 </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -644,17 +643,24 @@
   document.getElementById('loginOverlay').style.display = 'flex';
   });
 
-  async function doLogin() {
-  const u = document.getElementById('usernameInput').value.trim();
+async function doLogin() {
+  let u = document.getElementById('usernameInput').value.trim();
   const p = document.getElementById('passwordInput').value;
   const err = document.getElementById('loginError');
+
+  if (u === "bob") {
+    u = "bob@mail.com";
+  }
+
   try {
     await firebase.auth().signInWithEmailAndPassword(u, p);
     err.style.display = 'none';
   } catch (e) {
+    console.log(e.message);
+    err.textContent = e.message;
     err.style.display = 'block';
   }
-  }
+}
 
   function doLogout() {
   firebase.auth().signOut();
