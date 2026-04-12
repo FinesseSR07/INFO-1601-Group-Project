@@ -4,9 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script>
+  firebase.initializeApp({
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+  });
+</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-</head>
-<style>
+
+  <style>
   *{
     box-sizing: border-box;
     margin: 0;
@@ -480,6 +490,8 @@
   }
 
 </style>
+</head>
+
 <body>
   <div id="loginOverlay">
     <div class="login-card">
@@ -490,7 +502,7 @@
       <label for="passwordInput">Password</label>
       <input type="password" id="passwordInput" placeholder="Enter password" />
       <button id="loginBtn">Sign In</button>
-      <p id="loginError">Invalid credentials. Try bob / bobpass</p>
+      <p id="loginError">Invalid email or password.</p>
       </div>
   </div>
 
@@ -596,41 +608,20 @@
 </body>
 
 <script>
-  const VALID = { 
-    usernames: ['bob'], 
-    emails: ['bob@mail.com'], 
-    password: 'bobpass' 
-  };
   let currentUser = null;
   let currentCity = null;
   let precipChartInst = null, windChartInst = null, cloudChartInst = null;
 
-  document.getElementById('loginBtn').addEventListener('click', doLogin);
-  document.getElementById('usernameInput').addEventListener('keydown', e => { 
-    if (e.key === 'Enter') doLogin(); });
-  document.getElementById('passwordInput').addEventListener('keydown', e => { 
-    if (e.key === 'Enter') doLogin(); });
-  document.getElementById('logoutBtn').addEventListener('click', doLogout);
-  document.getElementById('loginPromptBtn').addEventListener('click', () => {
-  document.getElementById('loginOverlay').style.display = 'flex';});
-
-  function doLogin() {
-   const u = document.getElementById('usernameInput').value.trim().toLowerCase();
-   const p = document.getElementById('passwordInput').value;
-   const err = document.getElementById('loginError');
-    if ((VALID.usernames.includes(u) || VALID.emails.includes(u)) && p === VALID.password) {
-      currentUser = u;
-      document.getElementById('loginOverlay').style.display = 'none';
-      document.getElementById('logoutBtn').style.display = 'block';
-      document.getElementById('appContainer').style.display = 'grid';
-      document.getElementById('loginPromptBtn').style.display = 'none';
-      err.style.display = 'none';
-      renderSavedCities();
-    } else {
-    err.style.display = 'block';
-  }}
-
-  function doLogout() {
+  firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user.uid;
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('appContainer').style.display = 'grid';
+    document.getElementById('loginPromptBtn').style.display = 'none';
+    document.getElementById('loginError').style.display = 'none';
+    renderSavedCities();
+  } else {
     currentUser = null; currentCity = null;
     document.getElementById('logoutBtn').style.display = 'none';
     document.getElementById('appContainer').style.display = 'none';
@@ -639,7 +630,31 @@
     document.getElementById('usernameInput').value = '';
     document.getElementById('passwordInput').value = '';
   }
+  });
 
+  document.getElementById('loginBtn').addEventListener('click', doLogin);
+  document.getElementById('usernameInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('logoutBtn').addEventListener('click', doLogout);
+  document.getElementById('loginPromptBtn').addEventListener('click', () => {
+  document.getElementById('loginOverlay').style.display = 'flex';
+  });
+
+  async function doLogin() {
+  const u = document.getElementById('usernameInput').value.trim();
+  const p = document.getElementById('passwordInput').value;
+  const err = document.getElementById('loginError');
+  try {
+    await firebase.auth().signInWithEmailAndPassword(u, p);
+    err.style.display = 'none';
+  } catch (e) {
+    err.style.display = 'block';
+  }
+  }
+
+  function doLogout() {
+  firebase.auth().signOut();
+  }
 
   const WMO_MAP = {
   0:  ['Clear sky',            '☀️',  'clear'],
@@ -665,16 +680,14 @@
   99: ['Heavy thunderstorm',   '⛈️', 'storm'],
   };
 
-  function wmoInfo(code) { 
-    return WMO_MAP[code] || ['Unknown', '🌡️', 'cloudy']; 
-  }
+  function wmoInfo(code) { return WMO_MAP[code] || ['Unknown', '🌡️', 'cloudy']; }
   function badgeClass(type) {
   return { clear: 'badge-clear', cloudy: 'badge-cloudy', rain: 'badge-rain', storm: 'badge-storm' }[type] || 'badge-cloudy';
   }
-
+  
   document.getElementById('searchBtn').addEventListener('click', doSearch);
   document.getElementById('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
- 
+
   async function doSearch() {
   const q = document.getElementById('cityInput').value.trim();
   if (!q) return;
@@ -696,11 +709,11 @@
     + `&current=temperature_2m,relative_humidity_2m,weathercode,windspeed_10m`
     + `&timezone=auto`
     + `&forecast_days=7`;
- 
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`API ${res.status}`);
   const data = await res.json();
- 
+
   currentCity = { name, country, lat: latitude, lon: longitude };
   renderCurrentWeather(data, name, country);
   renderForecast(data);
@@ -710,24 +723,25 @@
   }
 
   function showLoading() {
-  document.getElementById('weatherDisplay').innerHTML = '<div class="loading-row"><div class="spinner"></div> Fetching weather…</div>';
-  document.getElementById('forecastContainer').innerHTML = '<div class="loading-row"><div class="spinner"></div></div>';
-  document.getElementById('hourlyBody').innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:12px 10px;">Loading…</td></tr>';
-  }
- 
-  function clearDisplay() {
-  document.getElementById('weatherDisplay').innerHTML = '<p style="color:var(--muted);font-size:14px;">Search for a city to see current conditions.</p>';
-  document.getElementById('forecastContainer').innerHTML = '<p style="color:var(--muted);font-size:13px;">Forecast will appear after a search.</p>';
-  document.getElementById('hourlyBody').innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:12px 10px;">Data will appear after a search.</td></tr>';
+   document.getElementById('weatherDisplay').innerHTML = '<div class="loading-row"><div class="spinner"></div> Fetching weather…</div>';
+   document.getElementById('forecastContainer').innerHTML = '<div class="loading-row"><div class="spinner"></div></div>';
+   document.getElementById('hourlyBody').innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:12px 10px;">Loading…</td></tr>';
   }
 
-  function renderCurrentWeather(data, name, country) {
+  function clearDisplay() {
+    document.getElementById('weatherDisplay').innerHTML = '<p style="color:var(--muted);font-size:14px;">Search for a city to see current conditions.</p>';
+   document.getElementById('forecastContainer').innerHTML = '<p style="color:var(--muted);font-size:13px;">Forecast will appear after a search.</p>';
+   document.getElementById('hourlyBody').innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:12px 10px;">Data will appear after a search.</td></tr>';
+  }
+
+  async function renderCurrentWeather(data, name, country) {
   const c = data.current;
   const ch = new Date().getHours();
   const [cond, icon] = wmoInfo(c.weathercode);
   const feelMax = Math.round(data.daily.apparent_temperature_max[0]);
-  const isSaved = getSavedCities().some(s => s.name === name);
- 
+  const saved = await getSavedCities();
+  const isSaved = saved.some(s => s.name === name);
+
   document.getElementById('weatherDisplay').innerHTML = `
     <div class="weather-main">
       <div class="weather-icon">${icon}</div>
@@ -771,13 +785,13 @@
   const precip = data.hourly.precipitation.slice(ch, ch + 24);
   const wind   = data.hourly.wind_speed_10m.slice(ch, ch + 24);
   const cloud  = data.hourly.cloud_cover.slice(ch, ch + 24);
- 
+
   const labels = times.map(t => {
     const h = new Date(t).getHours();
     return h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
   });
- 
-  const base = {
+
+    const base = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     elements: { point: { radius: 2 } },
@@ -786,30 +800,30 @@
       y: { ticks: { font: { size: 10 }, color: '#5a7a8a' }, grid: { color: 'rgba(0,0,0,0.05)' } }
     }
   };
- 
+
   if (precipChartInst) precipChartInst.destroy();
   precipChartInst = new Chart(document.getElementById('precipChart'), {
     type: 'bar',
     data: { labels, datasets: [{ data: precip, backgroundColor: '#378add', borderRadius: 3 }] },
     options: { ...base }
   });
- 
+
   if (windChartInst) windChartInst.destroy();
   windChartInst = new Chart(document.getElementById('windChart'), {
     type: 'line',
     data: { labels, datasets: [{ data: wind, borderColor: '#1d9e75', backgroundColor: 'rgba(29,158,117,0.08)', fill: true, tension: 0.4 }] },
     options: { ...base }
   });
- 
-  if (cloudChartInst) cloudChartInst.destroy();
+
+    if (cloudChartInst) cloudChartInst.destroy();
   cloudChartInst = new Chart(document.getElementById('cloudChart'), {
     type: 'line',
     data: { labels, datasets: [{ data: cloud, borderColor: '#ba7517', backgroundColor: 'rgba(186,117,23,0.08)', fill: true, tension: 0.4, borderDash: [4, 3] }] },
     options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, min: 0, max: 100 } } }
   });
- }
+  }
 
- function renderHourlyTable(data) {
+  function renderHourlyTable(data) {
   const ch = new Date().getHours();
   let rows = '';
   for (let i = 0; i < 12; i++) {
@@ -830,74 +844,95 @@
   document.getElementById('hourlyBody').innerHTML = rows;
   }
 
-  function getSavedCities() { return JSON.parse(localStorage.getItem('skyview_cities') || '[]'); }
-  function setSavedCities(arr) { localStorage.setItem('skyview_cities', JSON.stringify(arr)); }
- 
-  function saveCity(name, country) {
-  const saved = getSavedCities();
-  if (!saved.some(s => s.name === name)) { saved.push({ name, country }); setSavedCities(saved); }
+  async function getSavedCities() {
+  if (!currentUser) return [];
+  const snap = await firebase.firestore()
+    .collection('users').doc(currentUser)
+    .collection('cities').get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function saveCity(name, country) {
+  const saved = await getSavedCities();
+  if (!saved.some(s => s.name === name)) {
+    await firebase.firestore()
+      .collection('users').doc(currentUser)
+      .collection('cities').add({ name, country });
+  }
   renderSavedCities();
   const btn = document.getElementById('saveCityBtn');
   if (btn) { btn.textContent = '✓ Saved'; btn.disabled = true; }
   showToast(`${name} saved!`);
-  }
- 
-  function removeCity(name) {
-  setSavedCities(getSavedCities().filter(s => s.name !== name));
-  renderSavedCities();
-  showToast(`${name} removed.`);
-  }
- 
-  function renderSavedCities() {
-  const saved = getSavedCities();
-  const el = document.getElementById('savedCitiesList');
-  if (!saved.length) { el.innerHTML = '<span style="color:var(--muted);font-size:13px;">No saved cities yet.</span>'; return; }
-  el.innerHTML = saved.map(s => `
-    <span class="city-chip" data-name="${s.name}" data-country="${s.country}">
-      ${s.name}
-      <span class="del" data-del="${s.name}">×</span>
-    </span>
-  `).join('');
-  el.querySelectorAll('.city-chip').forEach(chip => {
-    chip.addEventListener('click', async e => {
-      if (e.target.dataset.del) { removeCity(e.target.dataset.del); return; }
-      const name = chip.dataset.name, country = chip.dataset.country;
-      document.getElementById('cityInput').value = name;
-      showLoading();
-      try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=en&format=json`);
-        const geoData = await geoRes.json();
-        const loc = geoData.results?.find(r => r.name === name && r.country === country) || geoData.results?.[0];
-        if (loc) await fetchWeather(loc);
-      } catch (e) { showToast('Error loading city.'); }
-    });
-  });
+}
+
+  async function removeCity(name) {
+    const snap = await firebase.firestore()
+      .collection('users').doc(currentUser)
+      .collection('cities').get();
+    const doc = snap.docs.find(d => d.data().name === name);
+    if (doc) await doc.ref.delete();
+    renderSavedCities();
+    showToast(`${name} removed.`);
   }
 
-  function getNotes() { return JSON.parse(localStorage.getItem('skyview_notes') || '{}'); }
-  function setNotes(obj) { localStorage.setItem('skyview_notes', JSON.stringify(obj)); }
- 
-  function renderNoteFor(cityName) {
-  const nc = document.getElementById('noteCity');
-  document.getElementById('weatherNote').value = getNotes()[cityName] || '';
-  nc.style.display = 'block';
-  nc.textContent = `Note for: ${cityName}`;
+  async function renderSavedCities() {
+    const saved = await getSavedCities();
+    const el = document.getElementById('savedCitiesList');
+    if (!saved.length) { el.innerHTML = '<span style="color:var(--muted);font-size:13px;">No saved cities yet.</span>'; return; }
+    el.innerHTML = saved.map(s => `
+      <span class="city-chip" data-name="${s.name}" data-country="${s.country}">
+        ${s.name}
+        <span class="del" data-del="${s.name}">×</span>
+      </span>
+    `).join('');
+    el.querySelectorAll('.city-chip').forEach(chip => {
+      chip.addEventListener('click', async e => {
+        if (e.target.dataset.del) { removeCity(e.target.dataset.del); return; }
+        const name = chip.dataset.name, country = chip.dataset.country;
+        document.getElementById('cityInput').value = name;
+        showLoading();
+        try {
+          const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=en&format=json`);
+          const geoData = await geoRes.json();
+          const loc = geoData.results?.find(r => r.name === name && r.country === country) || geoData.results?.[0];
+          if (loc) await fetchWeather(loc);
+        } catch (e) { showToast('Error loading city.'); }
+      });
+    });
   }
- 
-  document.getElementById('saveNoteBtn').addEventListener('click', () => {
-  if (!currentCity) { showToast('Search for a city first.'); return; }
-  const notes = getNotes();
-  notes[currentCity.name] = document.getElementById('weatherNote').value;
-  setNotes(notes);
-  showToast('Note saved!');
+
+  async function getNotes(cityName) {
+  if (!currentUser) return '';
+  const doc = await firebase.firestore()
+    .collection('users').doc(currentUser)
+    .collection('notes').doc(cityName).get();
+  return doc.exists ? doc.data().text : '';
+  }
+
+  async function setNotes(cityName, text) {
+    await firebase.firestore()
+      .collection('users').doc(currentUser)
+      .collection('notes').doc(cityName).set({ text });
+  }
+
+  async function renderNoteFor(cityName) {
+    const nc = document.getElementById('noteCity');
+    document.getElementById('weatherNote').value = await getNotes(cityName);
+   nc.style.display = 'block';
+   nc.textContent = `Note for: ${cityName}`;
+  }
+
+  document.getElementById('saveNoteBtn').addEventListener('click', async () => {
+    if (!currentCity) { showToast('Search for a city first.'); return; }
+    await setNotes(currentCity.name, document.getElementById('weatherNote').value);
+    showToast('Note saved!');
   });
 
   function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
   }
-
 </script>
 </html>
