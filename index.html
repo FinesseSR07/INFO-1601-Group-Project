@@ -147,8 +147,99 @@
     background: #c0392b;
   }
 
+  #savedCities{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .city-chip{
+    border: 1.5px solid black;
+    color: navy;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .city-chip:hover{
+   opacity: 0.8;
+  }
+  .city-chip .del{
+    color: orangered;
+  }
+  .city-chip .del:hover{
+    color: red;
+  }
+
+  .weather-main{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .weather-icon{
+    font-size: 52px;
+    line-height: 1;
+  }
+  .weather-stats{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-box{
+    background: whitesmoke;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .stat-box .label{
+    text-transform: uppercase;
+  }
+  #saveCityBtn{
+    margin-top: 12px;
+    background: teal;
+    padding: 8px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #saveCityBtn:hover{
+    background: #245880;
+  }
+  #saveCityBtn:disabled{
+    background: #a0c4d4;
+    cursor: default;
+  }
+
+  #forecastContainter{
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .forecast-card{
+    min-width: 150px;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .forecast-card .day{
+    margin-bottom: 4px;
+  }
+
+  .charts-gird{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .chart-box h3{
+    text-transform: uppercase;
+  }
+  canvas{
+    max-height: 200px;
+  }
+
   
 </style>
+<script>
+
+</script>
 <body>
   <nav>
     <div>
