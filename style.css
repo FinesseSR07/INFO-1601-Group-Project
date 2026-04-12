@@ -124,6 +124,27 @@ button {
   color: var(--accent);
 }
 
+#installBtn {
+  background: #fff;
+  color: var(--navy);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+#installBtn:hover {
+  background: #e9f3f8;
+}
+
+@media (display-mode: browser) {
+  #installInstructions {
+    display: block;
+  }
+}
+
 
 .container {
   max-width: 1100px;               
