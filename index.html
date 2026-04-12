@@ -56,13 +56,12 @@
   }
   .login-card h2{
     font-size: 22px;
-    color: var(--navy);
+    color: navy;
     margin-bottom: 6px;
   }
   .login-card p{
     font-size: 13px;
     margin-bottom: 24px;
-    color: var(--muted);
   }
   .login-card label{
     display: block;
@@ -80,8 +79,35 @@
   }
   #loginBtn{
     width: 100%;
+    padding: 11px;
+    background-color: orange;
+    cursor: pointer;
+  }
+  #loginBtn{
+    background-color: #ff8c00;
+  }
+  #loginError{
+    color: #c0392b;
+    font-size: 13px;
+    margin-top: 10px;
   }
 
+  #publicBanner{
+    background: navy;
+    color: white;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  #loginPromptBtn{
+    background: orange;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #loginPromptBtn:hover{
+    background: #c0392b;
+  }
 
   .container{
     max-width: 960px;
@@ -89,6 +115,9 @@
     padding: 20px 24px;
     display: grid;
     gap: 16px;
+  }
+  .card{
+    
   }
   section{
     background: whitesmoke;
