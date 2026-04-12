@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather Dashboard</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a4a">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -215,6 +218,27 @@
   .btn-primary:hover { 
     background: #e07a10; 
   }
+
+  #installBtn {
+  background: #fff;
+  color: var(--navy);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+#installBtn:hover {
+  background: #e9f3f8;
+}
+
+@media (display-mode: browser) {
+  #installInstructions {
+    display: block;
+  }
+}
 
   #savedCitiesList { 
     display: flex; 
@@ -522,6 +546,10 @@
     <h2>Real-Time Weather, Anywhere</h2>
     <p>Search any city for live conditions, 7-day forecasts, and trend charts.</p>
     <button id="loginPromptBtn">Sign in to save cities &amp; notes →</button>
+    <button id="installBtn" style="display:none;">Install App</button>
+    <p id="installInstructions" style="display:none; margin-top:10px;">
+    On iPhone/iPad: open Share and tap <strong>Add to Home Screen</strong>.
+    </p>
   </div>
 
   <div class="container" id="appContainer" style="display:none;">
@@ -944,6 +972,48 @@ async function saveCity(name, country) {
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  let deferredPrompt = null;
+
+  const installBtn = document.getElementById('installBtn');
+  const installInstructions = document.getElementById('installInstructions');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      showToast('App installed successfully.');
+    } else {
+      showToast('Install dismissed.');
+    }
+
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    showToast('Arasakaweather has been installed.');
+    installBtn.style.display = 'none';
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service worker registered'))
+        .catch(err => console.log('Service worker error:', err));
+    });
   }
 </script>
 </html>
