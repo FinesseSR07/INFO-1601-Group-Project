@@ -328,9 +328,391 @@
     font-size: 11px; 
     color: var(--muted); 
     margin-top: 2px; 
+  }
+
+  .charts-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr; 
+    gap: 14px; 
+  }
+  .chart-box h3 { 
+    font-size: 11px; 
+    color: var(--muted); 
+    margin-bottom: 8px; 
+    text-transform: uppercase; 
+    letter-spacing: .5px; 
+  }
+  .chart-wrap { 
+    position: relative; 
+    height: 170px; 
+    width: 100%; 
+  }
+
+  .table-wrap { 
+    overflow-x: auto; 
+  }
+  table.hourly { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 13px; 
+  }
+  table.hourly th { 
+    text-align: left; 
+    font-size: 11px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: .6px; 
+    padding: 6px 10px; 
+    border-bottom: 1px solid var(--border); 
+    font-weight: 600; 
+  }
+  table.hourly td { 
+    padding: 8px 10px; 
+    border-bottom: 1px solid var(--border); 
+    color: var(--text); 
+  }
+  table.hourly tr:last-child td { 
+    border-bottom: none; 
+  }
+  table.hourly tr:hover td { 
+    background: var(--surface); 
+  }
+  .badge { 
+    display: inline-block; 
+    padding: 2px 8px; 
+    border-radius: 20px; 
+    font-size: 11px; 
+    font-weight: 600; 
+  }
+  .badge-clear  { 
+    background: #e1f5ee; 
+    color: #085041; 
+  }
+  .badge-cloudy { 
+    background: #e6f1fb; 
+    color: #0c447c; 
+  }
+  .badge-rain   { 
+    background: #faeeda; 
+    color: #633806; 
+  }
+  .badge-storm  { 
+    background: #fcebeb; 
+    color: #791f1f; 
+  }
+
+  #weatherNote { 
+    width: 100%; 
+    min-height: 90px; 
+    padding: 10px 12px; 
+    border: 1.5px solid var(--border); 
+    border-radius: 8px; 
+    font-size: 14px; 
+    color: var(--text); 
+    resize: vertical; 
+    outline: none; 
+    background: #fff; 
+  }
+  #weatherNote:focus { 
+    border-color: var(--teal); }
+  #saveNoteBtn { 
+    margin-top: 8px; 
+    background: var(--teal); 
+    border: none; 
+    color: #fff; 
+    padding: 8px 18px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 13px; 
+  }
+  #saveNoteBtn:hover { 
+    background: #246880; 
+  }
+  #noteCity { 
+    font-size: 12px; 
+    color: var(--muted); 
+    margin-bottom: 6px; 
+  }
+  .spinner { 
+    display: inline-block; 
+    width: 22px; 
+    height: 22px; 
+    border: 3px solid #cde5f0; 
+    border-top-color: var(--teal); 
+    border-radius: 50%; 
+    animation: spin 0.7s linear infinite; 
+  }
+  @keyframes spin { 
+    to { transform: rotate(360deg); } 
+  }
+  .loading-row { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    color: var(--muted); 
+    font-size: 14px; 
+    padding: 8px 0; 
+  }
+
+  #toast { 
+    position: fixed; 
+    bottom: 24px; 
+    right: 24px; 
+    background: var(--navy); 
+    color: #fff; 
+    padding: 12px 20px; 
+    border-radius: 10px; 
+    font-size: 14px; 
+    opacity: 0; 
+    transition: opacity 0.3s; 
+    pointer-events: none; 
+    z-index: 300; 
+  }
+  #toast.show { 
+    opacity: 1; 
     }
+
+  @media(max-width: 700px) {
+    .container { grid-template-columns: 1fr; }
+    .span2 { grid-column: span 1; }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
 </style>
 <script>
+  const VALID = { 
+    usernames: ['bob'], 
+    emails: ['bob@mail.com'], 
+    password: 'bobpass' 
+  };
+  let currentUser = null;
+  let currentCity = null;
+  let precipChartInst = null, windChartInst = null, cloudChartInst = null;
+
+  document.getElementById('loginBtn').addEventListener('click', doLogin);
+  document.getElementById('usernameInput').addEventListener('keydown', e => { 
+    if (e.key === 'Enter') doLogin(); });
+  document.getElementById('passwordInput').addEventListener('keydown', e => { 
+    if (e.key === 'Enter') doLogin(); });
+  document.getElementById('logoutBtn').addEventListener('click', doLogout);
+  document.getElementById('loginPromptBtn').addEventListener('click', () => {
+  document.getElementById('loginOverlay').style.display = 'flex';});
+
+  function doLogin() {
+  const u = document.getElementById('usernameInput').value.trim().toLowerCase();
+  const p = document.getElementById('passwordInput').value;
+  const err = document.getElementById('loginError');
+  if ((VALID.usernames.includes(u) || VALID.emails.includes(u)) && p === VALID.password) {
+    currentUser = u;
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('appContainer').style.display = 'grid';
+    document.getElementById('loginPromptBtn').style.display = 'none';
+    err.style.display = 'none';
+    renderSavedCities();
+  } else {
+    err.style.display = 'block';
+  }
+
+  function doLogout() {
+  currentUser = null; currentCity = null;
+  document.getElementById('logoutBtn').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginPromptBtn').style.display = 'inline-block';
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('usernameInput').value = '';
+  document.getElementById('passwordInput').value = '';
+  }
+  }
+
+  const WMO_MAP = {
+  0:  ['Clear sky',            '☀️',  'clear'],
+  1:  ['Mainly clear',         '🌤️', 'clear'],
+  2:  ['Partly cloudy',        '⛅',  'cloudy'],
+  3:  ['Overcast',             '☁️',  'cloudy'],
+  45: ['Foggy',                '🌫️', 'cloudy'],
+  48: ['Icy fog',              '🌫️', 'cloudy'],
+  51: ['Light drizzle',        '🌦️', 'rain'],
+  53: ['Drizzle',              '🌦️', 'rain'],
+  55: ['Heavy drizzle',        '🌧️', 'rain'],
+  61: ['Slight rain',          '🌧️', 'rain'],
+  63: ['Moderate rain',        '🌧️', 'rain'],
+  65: ['Heavy rain',           '🌧️', 'rain'],
+  71: ['Slight snow',          '🌨️', 'rain'],
+  73: ['Moderate snow',        '🌨️', 'rain'],
+  75: ['Heavy snow',           '❄️',  'rain'],
+  80: ['Showers',              '🌦️', 'rain'],
+  81: ['Moderate showers',     '🌧️', 'rain'],
+  82: ['Violent showers',      '⛈️', 'storm'],
+  95: ['Thunderstorm',         '⛈️', 'storm'],
+  96: ['Thunderstorm + hail',  '⛈️', 'storm'],
+  99: ['Heavy thunderstorm',   '⛈️', 'storm'],
+  };
+
+  function wmoInfo(code) { 
+    return WMO_MAP[code] || ['Unknown', '🌡️', 'cloudy']; 
+  }
+  function badgeClass(type) {
+  return { clear: 'badge-clear', cloudy: 'badge-cloudy', rain: 'badge-rain', storm: 'badge-storm' }[type] || 'badge-cloudy';
+  }
+
+  document.getElementById('searchBtn').addEventListener('click', doSearch);
+  document.getElementById('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+ 
+  async function doSearch() {
+  const q = document.getElementById('cityInput').value.trim();
+  if (!q) return;
+  showLoading();
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`);
+    const geoData = await geoRes.json();
+    if (!geoData.results?.length) { showToast('City not found.'); clearDisplay(); return; }
+    await fetchWeather(geoData.results[0]);
+  } catch (e) { showToast('Network error. Check your connection.'); clearDisplay(); }
+  }
+
+  async function fetchWeather(loc) {
+  const { latitude, longitude, name, country } = loc;
+  const url = `https://api.open-meteo.com/v1/forecast`
+    + `?latitude=${latitude}&longitude=${longitude}`
+    + `&daily=apparent_temperature_max,weathercode,temperature_2m_max,temperature_2m_min`
+    + `&hourly=precipitation,weather_code,cloud_cover,wind_speed_10m,temperature_2m,relative_humidity_2m`
+    + `&current=temperature_2m,relative_humidity_2m,weathercode,windspeed_10m`
+    + `&timezone=auto`
+    + `&forecast_days=7`;
+ 
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const data = await res.json();
+ 
+  currentCity = { name, country, lat: latitude, lon: longitude };
+  renderCurrentWeather(data, name, country);
+  renderForecast(data);
+  renderCharts(data);
+  renderHourlyTable(data);
+  renderNoteFor(name);
+  }
+
+  function showLoading() {
+  document.getElementById('weatherDisplay').innerHTML = '<div class="loading-row"><div class="spinner"></div> Fetching weather…</div>';
+  document.getElementById('forecastContainer').innerHTML = '<div class="loading-row"><div class="spinner"></div></div>';
+  document.getElementById('hourlyBody').innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:12px 10px;">Loading…</td></tr>';
+  }
+ 
+  function clearDisplay() {
+  document.getElementById('weatherDisplay').innerHTML = '<p style="color:var(--muted);font-size:14px;">Search for a city to see current conditions.</p>';
+  document.getElementById('forecastContainer').innerHTML = '<p style="color:var(--muted);font-size:13px;">Forecast will appear after a search.</p>';
+  document.getElementById('hourlyBody').innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:12px 10px;">Data will appear after a search.</td></tr>';
+  }
+
+  function renderCurrentWeather(data, name, country) {
+  const c = data.current;
+  const ch = new Date().getHours();
+  const [cond, icon] = wmoInfo(c.weathercode);
+  const feelMax = Math.round(data.daily.apparent_temperature_max[0]);
+  const isSaved = getSavedCities().some(s => s.name === name);
+ 
+  document.getElementById('weatherDisplay').innerHTML = `
+    <div class="weather-main">
+      <div class="weather-icon">${icon}</div>
+      <div class="weather-info">
+        <h3>${name}, ${country}</h3>
+        <div class="temp">${Math.round(c.temperature_2m)}°C</div>
+        <div class="cond">${cond} &nbsp;·&nbsp; Feels like max: ${feelMax}°C</div>
+      </div>
+    </div>
+    <div class="weather-stats">
+      <div class="stat-box"><div class="label">Humidity</div><div class="val">${c.relative_humidity_2m}%</div></div>
+      <div class="stat-box"><div class="label">Wind Speed</div><div class="val">${Math.round(c.windspeed_10m)} km/h</div></div>
+      <div class="stat-box"><div class="label">Precipitation</div><div class="val">${(data.hourly.precipitation[ch] ?? 0).toFixed(1)} mm</div></div>
+      <div class="stat-box"><div class="label">Cloud Cover</div><div class="val">${Math.round(data.hourly.cloud_cover[ch])}%</div></div>
+    </div>
+    <button id="saveCityBtn" ${isSaved ? 'disabled' : ''}>${isSaved ? '✓ Saved' : '+ Save City'}</button>
+  `;
+  document.getElementById('saveCityBtn').addEventListener('click', () => saveCity(name, country));
+  }
+
+  function renderForecast(data) {
+  const { time, apparent_temperature_max, weathercode, temperature_2m_max, temperature_2m_min } = data.daily;
+  let html = '';
+  time.forEach((dt, i) => {
+    const label = i === 0 ? 'Today' : new Date(dt + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const [cond, icon] = wmoInfo(weathercode[i]);
+    html += `<div class="forecast-card">
+      <div class="day">${label}</div>
+      <div class="fc-icon">${icon}</div>
+      <div class="fc-temp">${Math.round(temperature_2m_max[i])}° / ${Math.round(temperature_2m_min[i])}°</div>
+      <div class="fc-feel">Feels ${Math.round(apparent_temperature_max[i])}°C</div>
+      <div class="fc-cond">${cond}</div>
+    </div>`;
+  });
+  document.getElementById('forecastContainer').innerHTML = html;
+  }
+
+  function renderCharts(data) {
+  const ch = new Date().getHours();
+  const times  = data.hourly.time.slice(ch, ch + 24);
+  const precip = data.hourly.precipitation.slice(ch, ch + 24);
+  const wind   = data.hourly.wind_speed_10m.slice(ch, ch + 24);
+  const cloud  = data.hourly.cloud_cover.slice(ch, ch + 24);
+ 
+  const labels = times.map(t => {
+    const h = new Date(t).getHours();
+    return h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+  });
+ 
+  const base = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    elements: { point: { radius: 2 } },
+    scales: {
+      x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#5a7a8a' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+      y: { ticks: { font: { size: 10 }, color: '#5a7a8a' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+    }
+  };
+ 
+  if (precipChartInst) precipChartInst.destroy();
+  precipChartInst = new Chart(document.getElementById('precipChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: precip, backgroundColor: '#378add', borderRadius: 3 }] },
+    options: { ...base }
+  });
+ 
+  if (windChartInst) windChartInst.destroy();
+  windChartInst = new Chart(document.getElementById('windChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ data: wind, borderColor: '#1d9e75', backgroundColor: 'rgba(29,158,117,0.08)', fill: true, tension: 0.4 }] },
+    options: { ...base }
+  });
+ 
+  if (cloudChartInst) cloudChartInst.destroy();
+  cloudChartInst = new Chart(document.getElementById('cloudChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ data: cloud, borderColor: '#ba7517', backgroundColor: 'rgba(186,117,23,0.08)', fill: true, tension: 0.4, borderDash: [4, 3] }] },
+    options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, min: 0, max: 100 } } }
+  });
+ }
+
+ function renderHourlyTable(data) {
+  const ch = new Date().getHours();
+  let rows = '';
+  for (let i = 0; i < 12; i++) {
+    const idx = ch + i;
+    const t = data.hourly.time[idx];
+    const h = new Date(t).getHours();
+    const timeLabel = h === 0 ? '12:00 am' : h < 12 ? `${h}:00 am` : h === 12 ? '12:00 pm' : `${h - 12}:00 pm`;
+    const code = data.hourly.weather_code[idx] ?? 0;
+    const [cond, , type] = wmoInfo(code);
+    rows += `<tr>
+      <td>${timeLabel}</td>
+      <td>${(data.hourly.precipitation[idx] ?? 0).toFixed(1)}</td>
+      <td>${Math.round(data.hourly.cloud_cover[idx] ?? 0)}%</td>
+      <td>${Math.round(data.hourly.wind_speed_10m[idx] ?? 0)}</td>
+      <td><span class="badge ${badgeClass(type)}">${cond}</span></td>
+    </tr>`;
+  }
+  document.getElementById('hourlyBody').innerHTML = rows;
+  }
 
 </script>
 <body>
