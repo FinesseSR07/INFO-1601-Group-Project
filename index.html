@@ -479,6 +479,121 @@
   }
 
 </style>
+<body>
+  <div id="loginOverlay">
+    <div class="login-card">
+      <h2>Welcome to SkyView</h2>
+      <p>Sign in to save cities, view forecasts, and more.</p>
+      <label for="usernameInput">Username or Email</label>
+      <input type="text" id="usernameInput" placeholder="bob or bob@mail.com" />
+      <label for="passwordInput">Password</label>
+      <input type="password" id="passwordInput" placeholder="Enter password" />
+      <button id="loginBtn">Sign In</button>
+      <p id="loginError">Invalid credentials. Try bob / bobpass</p>
+      </div>
+  </div>
+
+  <nav>
+    <div class="nav-brand">
+      <h1>SkyView</h1>
+      <p>Weather Dashboard</p>
+    </div>
+    <button id="logoutBtn">Sign Out</button>
+  </nav>
+
+  <div id="publicBanner">
+    <h2>Real-Time Weather, Anywhere</h2>
+    <p>Search any city for live conditions, 7-day forecasts, and trend charts.</p>
+    <button id="loginPromptBtn">Sign in to save cities &amp; notes →</button>
+  </div>
+
+  <div class="container" id="appContainer" style="display:none;">
+
+    <div class="card span2">
+      <h2>Search City</h2>
+        <div class="search-row">
+          <input type="text" id="cityInput" placeholder="Enter city name (e.g. London, Tokyo, Port of Spain...)" />
+          <button class="btn-primary" id="searchBtn">Search</button>
+        </div>
+      </div>
+    
+    <div class="card">
+      <h2>Saved Cities</h2>
+      <div id="savedCitiesList">
+        <span style="color:var(--muted);font-size:13px;">No saved cities yet.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Current Weather</h2>
+        <div id="weatherDisplay">
+          <p style="color:var(--muted);font-size:14px;">Search for a city to see current conditions.</p>
+        </div>
+      </div>
+
+      <div class="card span2">
+        <h2>7-Day Forecast</h2>
+        <div id="forecastContainer">
+          <p style="color:var(--muted);font-size:13px;">Forecast will appear after a search.</p>
+        </div>
+      </div>
+
+    <div class="card span2">
+        <h2>24-Hour Trends</h2>
+        <div class="charts-grid">
+          <div class="chart-box">
+            <h3>Precipitation (mm)</h3>
+          <div class="chart-wrap">
+            <canvas id="precipChart" role="img" aria-label="Precipitation over next 24 hours">Precipitation data.</canvas>
+          </div>
+        </div>
+        <div class="chart-box">
+          <h3>Wind Speed (km/h)</h3>
+          <div class="chart-wrap">
+            <canvas id="windChart" role="img" aria-label="Wind speed over next 24 hours">Wind speed data.</canvas>
+          </div>
+        </div>
+        <div class="chart-box">
+          <h3>Cloud Cover (%)</h3>
+          <div class="chart-wrap">
+            <canvas id="cloudChart" role="img" aria-label="Cloud cover over next 24 hours">Cloud cover data.</canvas></div>
+        </div>
+      </div>
+     </div>
+
+     <div class="card span2">
+      <h2>Hourly Breakdown (next 12 hours)</h2>
+      <div class="table-wrap">
+        <table class="hourly">
+          <thead><tr>
+            <th>Time</th>
+            <th>Precip (mm)</th>
+            <th>Cloud Cover</th>
+            <th>Wind (km/h)</th>
+            <th>Condition</th>
+            </tr></thead>
+          <tbody id="hourlyBody"><tr>
+            <td colspan="5" style="color:var(--muted);padding:12px 10px;">Data will appear after a search.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h2>My Notes</h2>
+      <p id="noteCity" style="display:none;"></p>
+      <textarea id="weatherNote" placeholder="Write notes about this city's weather..."></textarea>
+      <br/>
+      <button id="saveNoteBtn">Save Note</button>
+    </div>
+ 
+  </div>
+ 
+  <div id="toast"></div>
+
+</body>
+
 <script>
   const VALID = { 
     usernames: ['bob'], 
@@ -499,31 +614,31 @@
   document.getElementById('loginOverlay').style.display = 'flex';});
 
   function doLogin() {
-  const u = document.getElementById('usernameInput').value.trim().toLowerCase();
-  const p = document.getElementById('passwordInput').value;
-  const err = document.getElementById('loginError');
-  if ((VALID.usernames.includes(u) || VALID.emails.includes(u)) && p === VALID.password) {
-    currentUser = u;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'block';
-    document.getElementById('appContainer').style.display = 'grid';
-    document.getElementById('loginPromptBtn').style.display = 'none';
-    err.style.display = 'none';
-    renderSavedCities();
-  } else {
+   const u = document.getElementById('usernameInput').value.trim().toLowerCase();
+   const p = document.getElementById('passwordInput').value;
+   const err = document.getElementById('loginError');
+    if ((VALID.usernames.includes(u) || VALID.emails.includes(u)) && p === VALID.password) {
+      currentUser = u;
+      document.getElementById('loginOverlay').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'block';
+      document.getElementById('appContainer').style.display = 'grid';
+      document.getElementById('loginPromptBtn').style.display = 'none';
+      err.style.display = 'none';
+      renderSavedCities();
+    } else {
     err.style.display = 'block';
-  }
+  }}
 
   function doLogout() {
-  currentUser = null; currentCity = null;
-  document.getElementById('logoutBtn').style.display = 'none';
-  document.getElementById('appContainer').style.display = 'none';
-  document.getElementById('loginPromptBtn').style.display = 'inline-block';
-  document.getElementById('loginOverlay').style.display = 'flex';
-  document.getElementById('usernameInput').value = '';
-  document.getElementById('passwordInput').value = '';
+    currentUser = null; currentCity = null;
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('loginPromptBtn').style.display = 'inline-block';
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('usernameInput').value = '';
+    document.getElementById('passwordInput').value = '';
   }
-  }
+
 
   const WMO_MAP = {
   0:  ['Clear sky',            '☀️',  'clear'],
@@ -784,118 +899,4 @@
   }
 
 </script>
-<body>
-  <div id="loginOverlay">
-    <div class="login-card">
-      <h2>Welcome to SkyView</h2>
-      <p>Sign in to save cities, view forecasts, and more.</p>
-      <label for="usernameInput">Username or Email</label>
-      <input type="text" id="usernameInput" placeholder="bob or bob@mail.com" />
-      <label for="passwordInput">Password</label>
-      <input type="password" id="passwordInput" placeholder="Enter password" />
-      <button id="loginBtn">Sign In</button>
-      <p id="loginError">Invalid credentials. Try bob / bobpass</p>
-      </div>
-  </div>
-
-  <nav>
-    <div class="nav-brand">
-      <h1>SkyView</h1>
-      <p>Weather Dashboard</p>
-    </div>
-    <button id="logoutBtn">Sign Out</button>
-  </nav>
-
-  <div id="publicBanner">
-    <h2>Real-Time Weather, Anywhere</h2>
-    <p>Search any city for live conditions, 7-day forecasts, and trend charts.</p>
-    <button id="loginPromptBtn">Sign in to save cities &amp; notes →</button>
-  </div>
-
-  <div class="container" id="appContainer" style="display:none;">
-
-    <div class="card span2">
-      <h2>Search City</h2>
-        <div class="search-row">
-          <input type="text" id="cityInput" placeholder="Enter city name (e.g. London, Tokyo, Port of Spain...)" />
-          <button class="btn-primary" id="searchBtn">Search</button>
-        </div>
-      </div>
-    
-    <div class="card">
-      <h2>Saved Cities</h2>
-      <div id="savedCitiesList">
-        <span style="color:var(--muted);font-size:13px;">No saved cities yet.</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Current Weather</h2>
-        <div id="weatherDisplay">
-          <p style="color:var(--muted);font-size:14px;">Search for a city to see current conditions.</p>
-        </div>
-      </div>
-
-      <div class="card span2">
-        <h2>7-Day Forecast</h2>
-        <div id="forecastContainer">
-          <p style="color:var(--muted);font-size:13px;">Forecast will appear after a search.</p>
-        </div>
-      </div>
-
-    <div class="card span2">
-        <h2>24-Hour Trends</h2>
-        <div class="charts-grid">
-          <div class="chart-box">
-            <h3>Precipitation (mm)</h3>
-          <div class="chart-wrap">
-            <canvas id="precipChart" role="img" aria-label="Precipitation over next 24 hours">Precipitation data.</canvas>
-          </div>
-        </div>
-        <div class="chart-box">
-          <h3>Wind Speed (km/h)</h3>
-          <div class="chart-wrap">
-            <canvas id="windChart" role="img" aria-label="Wind speed over next 24 hours">Wind speed data.</canvas>
-          </div>
-        </div>
-        <div class="chart-box">
-          <h3>Cloud Cover (%)</h3>
-          <div class="chart-wrap">
-            <canvas id="cloudChart" role="img" aria-label="Cloud cover over next 24 hours">Cloud cover data.</canvas></div>
-        </div>
-      </div>
-     </div>
-
-     <div class="card span2">
-      <h2>Hourly Breakdown (next 12 hours)</h2>
-      <div class="table-wrap">
-        <table class="hourly">
-          <thead><tr>
-            <th>Time</th>
-            <th>Precip (mm)</th>
-            <th>Cloud Cover</th>
-            <th>Wind (km/h)</th>
-            <th>Condition</th>
-            </tr></thead>
-          <tbody id="hourlyBody"><tr>
-            <td colspan="5" style="color:var(--muted);padding:12px 10px;">Data will appear after a search.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card span2">
-      <h2>My Notes</h2>
-      <p id="noteCity" style="display:none;"></p>
-      <textarea id="weatherNote" placeholder="Write notes about this city's weather..."></textarea>
-      <br/>
-      <button id="saveNoteBtn">Save Note</button>
-    </div>
- 
-  </div>
- 
-  <div id="toast"></div>
-  
-</body>
 </html>
