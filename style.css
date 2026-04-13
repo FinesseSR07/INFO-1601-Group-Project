@@ -70,7 +70,7 @@ nav p {
   margin-top: 2px;
 }
 
-.nav-actions {
+.nav-right {
   display: flex;
   gap: 12px;
 }
@@ -135,7 +135,7 @@ button {
 }
 
 
-section {
+.card {
   background: var(--glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -147,16 +147,16 @@ section {
 }
 
 
-section:hover {
+.card:hover {
   border-color: rgba(0, 242, 254, 0.2);
   box-shadow: 0 8px 40px rgba(0, 242, 254, 0.05);
 }
 
-.span-2 {
+.span2 {
   grid-column: span 2;
 }
 
-section h2 {
+.card h2 {
   font-size: 12px;
   font-weight: 800;
   color: var(--accent);
@@ -168,7 +168,7 @@ section h2 {
 }
 
 
-.search-form {
+.search-row {
   display: flex;
   gap: 12px;
 }
@@ -191,7 +191,7 @@ input[type="text"]:focus, textarea:focus {
   background: rgba(0, 0, 0, 0.5);
 }
 
-.search-form input {
+.search-row input {
   flex: 1;
 }
 
@@ -205,7 +205,7 @@ textarea {
 
 #installBtn {
   background: #fff;
-  color: var(--navy);
+  color: #1e3a4a;
   border: none;
   padding: 10px 24px;
   border-radius: 8px;
@@ -244,7 +244,7 @@ textarea {
 }
 
 /* 5-Day Forecast */
-.forecast-grid {
+#forecastContainer {
   display: flex;
   gap: 12px;
   overflow-x: auto;
@@ -281,14 +281,14 @@ textarea {
   font-weight: 700;
 }
 
-.city-chips {
+#savedCitiesList {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
 
-.chart-grid {
+.charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
@@ -333,15 +333,15 @@ textarea {
     padding: 0 16px 40px 16px;
   }
 
-  .span-2 {
+  .span2 {
     grid-column: span 1;
   }
   
-  .search-form {
+  .search-row {
     flex-direction: column;
   }
 
-  .chart-grid {
+  .charts-grid {
     grid-template-columns: 1fr;
   }
 }
