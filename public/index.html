@@ -444,6 +444,10 @@
     <h2>Real-Time Weather, Anywhere</h2>
     <p>Search any city for live conditions, 7-day forecasts, and trend charts.</p>
     <button id="loginPromptBtn">Sign in to save cities &amp; notes →</button>
+    <button id="installBtn" style="display:none;">Install App</button>
+    <p id="installInstructions" style="display:none; margin-top:10px;">
+    On iPhone/iPad: open Share and tap <strong>Add to Home Screen</strong>.
+    </p>
   </div>
  
   <div class="container" id="publicContainer">
@@ -864,6 +868,48 @@
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  let deferredPrompt = null;
+
+  const installBtn = document.getElementById('installBtn');
+  const installInstructions = document.getElementById('installInstructions');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      showToast('App installed successfully.');
+    } else {
+      showToast('Install dismissed.');
+    }
+
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    showToast('Arasakaweather has been installed.');
+    installBtn.style.display = 'none';
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service worker registered'))
+        .catch(err => console.log('Service worker error:', err));
+    });
   }
 </script>
 </body>
